@@ -12,7 +12,7 @@
         INTEGER,PARAMETER :: tend = 160000
         INTEGER,PARAMETER :: length = (tend-tini)
         INTEGER,PARAMETER :: output_width = 1 
-        INTEGER,PARAMETER :: avg_width = 100
+        INTEGER,PARAMETER :: avg_width = 10
         INTEGER,PARAMETER :: new_length = length/avg_width
         INTEGER,PARAMETER :: skip_length = length/100
 
