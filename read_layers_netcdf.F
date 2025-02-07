@@ -205,46 +205,47 @@
             do i=1,nx
               do l=1,nx
                 do m=1,ny
-                  w_pert_copy(l,m)=w_pert(l,m) ! make copy to be shifted
+                  w_pert_shift(l,m)=w_pert(l,m) ! make copy to be shifted
                 enddo
               enddo
-              w_pert_shift=w_pert_copy
-              call circular_shift_x(w_pert_shift,nx,ny,i-(nx/2))
+              call circular_shift_x(w_pert_shift,nx,ny,i-(nx/2)) ! shift in x direction
               do j=1,ny
                 if (j==1) then
-                  call circular_shift_y(w_pert_shift,nx,ny,j-(ny/2))
+                  call circular_shift_y(w_pert_shift,nx,ny,j-(ny/2)) !shift in y-direction
                 else
                   call circular_shift_y(w_pert_shift,nx,ny,1)
                 endif
                 cov_w = 0.0
                 var_w = 0.0
+                ! correlation coefficient calculation
                 do l=1,nx
                   do m=1,ny
                     cov_w=cov_w+(w_pert(l,m)*w_pert_shift(l,m))
                     var_w=var_w+(w_pert(l,m)**2)
                   enddo
                 enddo
-                cov_w=cov_w/(nx*ny)
-                var_w=var_w/(nx*ny)
-                correlation_w(i,j) = cov_w/var_w
+                cov_w=cov_w/(nx*ny) ! averaged covariance between shifted and nonshifted
+                var_w=var_w/(nx*ny) ! averaged variance
+                correlation_w(i,j) = cov_w/var_w ! corrleation coefficient
               enddo
             enddo
-            ierr_r=nf90_put_var(ncid_r,varid_r,correlation_w,start = [1,1,s],count=[nx, ny, 1])
+            ierr_r=nf90_put_var(ncid_r,varid_r,correlation_w,start = [1,1,s],count = [nx, ny, 1]) ! output correlation to netcdf
           endif
         enddo
-        ierr_w=nf90_put_var(ncid_w,varid_t,time)
+        ierr_w=nf90_put_var(ncid_w,varid_t,time) ! output time to netcdfs
         ierr_r=nf90_put_var(ncid_r,varid_t,time)
         ierr_w=nf90_close(ncid_w)
         ierr_r=nf90_close(ncid_r)
         END
+
         subroutine circular_shift_x(vector,nx,ny,shift)
+        !circularly shifts domain in x-direction
         implicit none
         integer, intent(in) :: nx,ny           ! Size of array
         integer, intent(in) :: shift          ! Shift amount (positive or negative)
         integer :: i,new_shift
         real(kind=8), intent(inout) :: vector(nx,ny)
         real(kind=8) :: temp(nx,ny)
-
         ! Adjust shift to be within [1, size]
         new_shift = mod(shift,nx)
         ! Allocate temporary array
@@ -259,21 +260,19 @@
         else
           temp = vector  ! No shift needed
         endif
-
         ! Copy shifted elements back to original vector
          vector = temp
-
         ! Deallocate temporary array
-
         end subroutine circular_shift_x
+
         subroutine circular_shift_y(vector,nx,ny,shift)
+        !circularly shifts domain in y-direction
         implicit none
         integer, intent(in) :: nx,ny           ! Size of array
         integer, intent(in) :: shift          ! Shift amount (positive or negative)
         integer :: i,new_shift
         real(kind=8), intent(inout) :: vector(nx,ny)
         real(kind=8) :: temp(nx,ny)
-
         ! Adjust shift to be within [1, size]
         new_shift = mod(shift,ny)
         ! Allocate temporary array
@@ -288,10 +287,7 @@
         else
           temp = vector  ! No shift needed
         endif
-
         ! Copy shifted elements back to original vector
          vector = temp
-
         ! Deallocate temporary array
-
         end subroutine circular_shift_y
