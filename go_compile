@@ -1,0 +1,18 @@
+#! /bin/bash
+# ------ script to compile code
+
+cwd=`pwd`
+cp *.F /glade/work/gwarner/compile/.
+cd /glade/work/gwarner/compile
+
+mpif90 -free -i4 -r8 -o a.out\
+      -I$NETCDF/include \
+      ../fft/fft.o \
+      -L$NETCDF/lib -lnetcdff -lnetcdf \
+      $1
+
+if  [ -e "a.out" ] ; then
+   mv a.out $cwd/.
+fi
+rm *.mod
+cd $cwd
